@@ -5,17 +5,26 @@ import java.util.Base64;
 import java.util.Optional;
 
 public class ObjectConvertUtil {
+    public static String byteArrayToBase64(byte[] bytes){
+        return Base64.getEncoder().withoutPadding().encodeToString(bytes);
+    }
+
+    public static byte[] base64ToByteArray(String str){
+        return Base64.getDecoder().decode(str);
+    }
+
+
     public static <T> String objectToBase64(T obj){
         Optional<byte[]> bytes = objectToBytes(obj);
         if(bytes.isPresent()){
-            return Base64.getEncoder().withoutPadding().encodeToString(bytes.get());
+            return byteArrayToBase64(bytes.get());
         }else{
             return "";
         }
     }
 
     public static <T> T base64ToObject(String str){
-        byte[] decode = Base64.getDecoder().decode(str);
+        byte[] decode = base64ToByteArray(str);
         Optional<Object> obj = ObjectConvertUtil.bytesToObject(decode);
         return (T) obj.orElse(null);
     }

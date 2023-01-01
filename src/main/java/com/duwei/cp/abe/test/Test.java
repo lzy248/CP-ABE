@@ -49,6 +49,9 @@ public class Test {
         //6.加密
         CipherText cipherText = cpAneEngine.encrypt(systemKey.getPublicKey(), plainText, accessTree);
         System.out.println("cipherText : " + cipherText);
+
+        //清除accesstree中root的秘密数
+        accessTree.getRoot().setSecretNumber(null);
         String decryptStr = cpAneEngine.decryptToStr(systemKey.getPublicKey(), userPrivateKey, cipherText);
         System.out.println("decryptStr : " + decryptStr);
     }

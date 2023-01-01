@@ -3,6 +3,7 @@ package com.duwei.cp.abe.structure;
 import com.duwei.cp.abe.attribute.Attribute;
 import lombok.Data;
 
+import java.io.Serializable;
 import java.util.List;
 
 /**
@@ -13,7 +14,7 @@ import java.util.List;
  * @Description: 根据模型构建访问树
  */
 @Data
-public class AccessTreeBuildModel {
+public class AccessTreeBuildModel implements Serializable {
     //访问树节点的唯一性标识
     private Integer id;
     //内部节点还是叶子节点

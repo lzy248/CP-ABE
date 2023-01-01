@@ -2,6 +2,8 @@ package com.duwei.cp.abe.structure;
 
 
 import com.duwei.cp.abe.parameter.PublicKey;
+import it.unisa.dia.gas.jpbc.Element;
+import it.unisa.dia.gas.jpbc.Pairing;
 import lombok.Data;
 
 import java.io.Serializable;
@@ -22,25 +24,59 @@ import java.util.stream.Stream;
 @Data
 public class AccessTree {
     private AccessTreeNode root;
+    private AccessTreeBuildModel[] accessTreeBuildModels;
 
-    private AccessTree(AccessTreeNode root) {
+    private AccessTree(AccessTreeNode root,AccessTreeBuildModel[] accessTreeBuildModels) {
         this.root = root;
+        this.accessTreeBuildModels = accessTreeBuildModels;
     }
 
-    /**
-     * 构建访问树节点
-     *
-     * @return
-     */
-    public static AccessTree build(PublicKey publicKey) {
-        AccessTreeNode root = new InnerAccessTreeNode(2, 1, null);
-        List<AccessTreeNode> children = new ArrayList<>();
-        children.add(new LeafAccessTreeNode("学生", publicKey, root, 1));
-        children.add(new LeafAccessTreeNode("老师", publicKey, root, 2));
-        children.add(new LeafAccessTreeNode("硕士", publicKey, root, 3));
-        root.setChildren(children);
-        return new AccessTree(root);
+    public Map<Integer,byte[]> getLeafSecretNumber(){
+        HashMap<Integer, byte[]> map = new HashMap<>();
+        getLeaf(root,map);
+        return map;
     }
+
+    private void getLeaf(AccessTreeNode node,Map<Integer,byte[]> map){
+        if(node instanceof LeafAccessTreeNode){
+            LeafAccessTreeNode leaf = (LeafAccessTreeNode) node;
+            map.put(leaf.getIndex(),leaf.getSecretNumber().getImmutable().toBytes());
+        } else if (node instanceof InnerAccessTreeNode) {
+            for(AccessTreeNode child: node.getChildren()){
+                getLeaf(child,map);
+            }
+        }
+    }
+    public void setLeafSecretNumber(Map<Integer,byte[]> map, Pairing pairing){
+        setLeaf(root,map,pairing);
+    }
+
+    private void setLeaf(AccessTreeNode node,Map<Integer,byte[]> map, Pairing pairing){
+        if(node instanceof LeafAccessTreeNode){
+            byte[] bytes = map.get(node.getIndex());
+            Element secretNumber = pairing.getZr().newElementFromBytes(bytes).getImmutable();
+            node.setSecretNumber(secretNumber);
+        }else if(node instanceof InnerAccessTreeNode){
+            for(AccessTreeNode child: node.getChildren()){
+                setLeaf(child,map,pairing);
+            }
+        }
+    }
+
+//    /**
+//     * 构建访问树节点
+//     *
+//     * @return
+//     */
+//    public static AccessTree build(PublicKey publicKey) {
+//        AccessTreeNode root = new InnerAccessTreeNode(2, 1, null);
+//        List<AccessTreeNode> children = new ArrayList<>();
+//        children.add(new LeafAccessTreeNode("学生", publicKey, root, 1));
+//        children.add(new LeafAccessTreeNode("老师", publicKey, root, 2));
+//        children.add(new LeafAccessTreeNode("硕士", publicKey, root, 3));
+//        root.setChildren(children);
+//        return new AccessTree(root);
+//    }
 
 
     public static AccessTree build(PublicKey publicKey, AccessTreeBuildModel[] accessTreeBuildModels) {
@@ -69,6 +105,6 @@ public class AccessTree {
         });
 
         //根节点元素索引必须为1
-        return new AccessTree(idNodeMap.get(1));
+        return new AccessTree(idNodeMap.get(1),accessTreeBuildModels);
     }
 }

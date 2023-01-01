@@ -48,11 +48,15 @@ public class Attribute {
             return false;
         }
         Attribute attribute1 = (Attribute) o;
-        return Objects.equals(attributeValue, attribute1.attributeValue) && Objects.equals(attributeName, attribute1.attributeName);
+//        return Objects.equals(attributeValue, attribute1.attributeValue) && Objects.equals(attributeName, attribute1.attributeName);
+        //序列化之后element引用会变
+        return attributeName.equals(attribute1.attributeName);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(attributeValue, attributeName);
+        //element引用会在序列化中变化,所以使用hashmap中导致hash不一致
+//        return Objects.hash(attributeValue, attributeName);
+        return Objects.hash(attributeName);
     }
 }
