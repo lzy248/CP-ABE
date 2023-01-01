@@ -58,7 +58,7 @@ public class CipherText {
 
 
     public static CipherText fromStr(String str, SystemKey systemKey){
-        Pairing pairing = PairingFactory.getPairing(parametersPath);
+        Pairing pairing = systemKey.getPublicKey().getPairingParameter().getPairing();
         Map<String, Object> map = ObjectConvertUtil.base64ToObject(str);
         CipherText cipherText = new CipherText();
         //恢复c_wave
