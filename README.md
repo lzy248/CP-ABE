@@ -14,5 +14,8 @@
 7. util：工具类
 #### 4、如何使用
 根据test包下的Text.class类中getAccessTree()方法样例，构建访问树结构，然后依照test1()方法依此进行加解密
-#### 5、github地址
+#### 5、fork github地址
 [https://github.com/lengnu/CP-ABE](https://github.com/lengnu/CP-ABE)
+#### 6、项目扩展
+1. 增加了systemKey的文件储存和读取
+2. 增加了cipherText对象的序列化和反序列化
