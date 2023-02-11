@@ -2,17 +2,15 @@ package com.duwei.cp.abe.structure;
 
 
 import com.duwei.cp.abe.parameter.PublicKey;
+import com.duwei.cp.abe.text.SerializableElement;
 import it.unisa.dia.gas.jpbc.Element;
 import it.unisa.dia.gas.jpbc.Pairing;
 import lombok.Data;
 
-import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * @BelongsProject: JPBC-ABE
@@ -26,39 +24,40 @@ public class AccessTree {
     private AccessTreeNode root;
     private AccessTreeBuildModel[] accessTreeBuildModels;
 
-    private AccessTree(AccessTreeNode root,AccessTreeBuildModel[] accessTreeBuildModels) {
+    private AccessTree(AccessTreeNode root, AccessTreeBuildModel[] accessTreeBuildModels) {
         this.root = root;
         this.accessTreeBuildModels = accessTreeBuildModels;
     }
 
-    public Map<Integer,byte[]> getLeafSecretNumber(){
-        HashMap<Integer, byte[]> map = new HashMap<>();
-        getLeaf(root,map);
+    public Map<Integer, SerializableElement> getLeafSecretNumber(Pairing pairing) {
+        HashMap<Integer, SerializableElement> map = new HashMap<>();
+        getLeaf(root, map, pairing);
         return map;
     }
 
-    private void getLeaf(AccessTreeNode node,Map<Integer,byte[]> map){
-        if(node instanceof LeafAccessTreeNode){
+    private void getLeaf(AccessTreeNode node, Map<Integer, SerializableElement> map, Pairing pairing) {
+        if (node instanceof LeafAccessTreeNode) {
             LeafAccessTreeNode leaf = (LeafAccessTreeNode) node;
-            map.put(leaf.getIndex(),leaf.getSecretNumber().getImmutable().toBytes());
+            map.put(leaf.getIndex(), SerializableElement.fromElement(leaf.getSecretNumber(), pairing));
         } else if (node instanceof InnerAccessTreeNode) {
-            for(AccessTreeNode child: node.getChildren()){
-                getLeaf(child,map);
+            for (AccessTreeNode child : node.getChildren()) {
+                getLeaf(child, map, pairing);
             }
         }
     }
-    public void setLeafSecretNumber(Map<Integer,byte[]> map, Pairing pairing){
-        setLeaf(root,map,pairing);
+
+    public void setLeafSecretNumber(Map<Integer, SerializableElement> map, Pairing pairing) {
+        setLeaf(root, map, pairing);
     }
 
-    private void setLeaf(AccessTreeNode node,Map<Integer,byte[]> map, Pairing pairing){
-        if(node instanceof LeafAccessTreeNode){
-            byte[] bytes = map.get(node.getIndex());
-            Element secretNumber = pairing.getZr().newElementFromBytes(bytes).getImmutable();
+    private void setLeaf(AccessTreeNode node, Map<Integer, SerializableElement> map, Pairing pairing) {
+        if (node instanceof LeafAccessTreeNode) {
+            SerializableElement serializableElement = map.get(node.getIndex());
+            Element secretNumber = serializableElement.toElement(pairing);
             node.setSecretNumber(secretNumber);
-        }else if(node instanceof InnerAccessTreeNode){
-            for(AccessTreeNode child: node.getChildren()){
-                setLeaf(child,map,pairing);
+        } else if (node instanceof InnerAccessTreeNode) {
+            for (AccessTreeNode child : node.getChildren()) {
+                setLeaf(child, map, pairing);
             }
         }
     }
@@ -95,7 +94,7 @@ public class AccessTree {
             idNodeMap.put(model.getId(), node);
         }
         //父亲节点ID  -  集合
-        Map<Integer, List<AccessTreeNode>> collect = idNodeMap.values().stream().collect(Collectors.groupingBy(node -> node.getParentId()));
+        Map<Integer, List<AccessTreeNode>> collect = idNodeMap.values().stream().collect(Collectors.groupingBy(AccessTreeNode::getParentId));
         idNodeMap.forEach((id, node) -> {
             List<AccessTreeNode> accessTreeNodes = collect.get(id);
             if (accessTreeNodes != null) {
@@ -105,6 +104,6 @@ public class AccessTree {
         });
 
         //根节点元素索引必须为1
-        return new AccessTree(idNodeMap.get(1),accessTreeBuildModels);
+        return new AccessTree(idNodeMap.get(1), accessTreeBuildModels);
     }
 }

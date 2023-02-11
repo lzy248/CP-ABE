@@ -5,17 +5,14 @@ import com.duwei.cp.abe.parameter.SystemKey;
 import com.duwei.cp.abe.parameter.UserPrivateKey;
 import com.duwei.cp.abe.structure.AccessTree;
 import com.duwei.cp.abe.structure.AccessTreeBuildModel;
-import com.duwei.cp.abe.structure.AccessTreeNode;
 import com.duwei.cp.abe.text.CipherText;
 import com.duwei.cp.abe.text.PlainText;
 import com.duwei.cp.abe.util.FileStoreUtils;
 import com.duwei.cp.abe.util.ObjectConvertUtil;
-import it.unisa.dia.gas.jpbc.Element;
 import it.unisa.dia.gas.jpbc.Pairing;
 import it.unisa.dia.gas.plaf.jpbc.pairing.PairingFactory;
 
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.util.*;
 
 import static com.duwei.cp.abe.parameter.PairingParameter.parametersPath;
@@ -60,25 +57,28 @@ public class Test {
         accessTreeBuildModels[3] = AccessTreeBuildModel.leafAccessTreeBuildModel(4, 3, "3", 1);
         return AccessTree.build(publicKey, accessTreeBuildModels);
     }
-@org.junit.Test
-    public void testToByte() throws UnsupportedEncodingException {
-        Map<String,Object> map = new HashMap<>();
-        map.put("haha","1");
-        map.put("xixxi","23");
+
+    @org.junit.Test
+    public void testToByte() {
+        Map<String, Object> map = new HashMap<>();
+        map.put("haha", "1");
+        map.put("xixxi", "23");
         Optional<byte[]> bytes = ObjectConvertUtil.objectToBytes(map);
         bytes.ifPresent(value -> {
             String s = Base64.getEncoder().withoutPadding().encodeToString(value);
             System.out.println(s);
         });
     }
+
     @org.junit.Test
-    public void testToObject(){
+    public void testToObject() {
 
         String s = "rO0ABXNyABFqYXZhLnV0aWwuSGFzaE1hcAUH2sHDFmDRAwACRgAKbG9hZEZhY3RvckkACXRocmVzaG9sZHhwP0AAAAAAAAx3CAAAABAAAAADdAADaGhhdXIAAltCrPMX+AYIVOACAAB4cAAAAAQAAQABdAAEaGFoYXQAATF0AAV4aXh4aXQAAjIzeA";
-        Map<String,Object> map = ObjectConvertUtil.base64ToObject(s);
+        Map<String, Object> map = ObjectConvertUtil.base64ToObject(s);
         byte[] b = (byte[]) map.get("hha");
         System.out.println(new String(b));
     }
+
     @org.junit.Test
     public void test2() throws IOException {
         CpAneEngine cpAneEngine = new CpAneEngine();
@@ -96,7 +96,7 @@ public class Test {
         );
         UserPrivateKey userPrivateKey = cpAneEngine.keyGen(systemKey.getMasterPrivateKey(), attributes);
 
-        String s = cipherText.toStr();
+        String s = cipherText.toStr(systemKey);
         System.out.println(s);
         CipherText cipherText1 = CipherText.fromStr(s, systemKey);
         System.out.println(cipherText);
@@ -151,11 +151,12 @@ public class Test {
         PlainText plainText = new PlainText(plainTextStr, systemKey.getPublicKey());
         AccessTree accessTree = getAccessTree(systemKey.getPublicKey());
         CipherText cipherText = cpAneEngine.encrypt(systemKey.getPublicKey(), plainText, accessTree);
-        System.out.println(cipherText.toStr());
+        System.out.println(cipherText.toStr(systemKey));
     }
+
     @org.junit.Test
     public void decrypt() throws IOException {
-        String s = "rO0ABXNyABFqYXZhLnV0aWwuSGFzaE1hcAUH2sHDFmDRAwACRgAKbG9hZEZhY3RvckkACXRocmVzaG9sZHhwP0AAAAAAAAx3CAAAABAAAAAGdAAHY195X21hcHNxAH4AAD9AAAAAAAAMdwgAAAAQAAAAA3QAATF1cgACW0Ks8xf4BghU4AIAAHhwAAAAgKLIWsbiy0yH4uGoOOESz8qk2tGcNt/ywLYXpSNoq0F3Exp5/MfqHmqkhiZokERZ6/Yn5PNt2TYw3dvhhY8C8nFjSoviFop+7ZXp8Pbigvi0h/zGOv2AsrIbUDsn9wETG+uVduGEqP+bfs0QHnwcKxTnYwKb6lByAeIDbyC0U5OAdAABMnVxAH4ABQAAAICiyFrG4stMh+LhqDjhEs/KpNrRnDbf8sC2F6UjaKtBdxMaefzH6h5qpIYmaJBEWev2J+Tzbdk2MN3b4YWPAvJxY0qL4haKfu2V6fD24oL4tIf8xjr9gLKyG1A7J/cBExvrlXbhhKj/m37NEB58HCsU52MCm+pQcgHiA28gtFOTgHQAATN1cQB+AAUAAACAoshaxuLLTIfi4ag44RLPyqTa0Zw23/LAthelI2irQXcTGnn8x+oeaqSGJmiQRFnr9ifk823ZNjDd2+GFjwLycWNKi+IWin7tlenw9uKC+LSH/MY6/YCyshtQOyf3ARMb65V24YSo/5t+zRAefBwrFOdjApvqUHIB4gNvILRTk4B4dAABY3VxAH4ABQAAAIAqlvsarK5t8I81/Sv7r3qxF/W3zKtRhuw799dEk+M5Hde7lka4O/eEojzelWZgTCaSBYX2MJuAoFsvTZ/KrLiDIh3BMC9j+BKO2BM4rCsB5+X12l22PLkLcVv3RzbZw0FWJr38PeN4+WT1mJYS32CkdGnntYJl8G4ywL3cP2aTgHQAFWFjY2Vzc1RyZWVCdWlsZE1vZGVsc3VyADJbTGNvbS5kdXdlaS5jcC5hYmUuc3RydWN0dXJlLkFjY2Vzc1RyZWVCdWlsZE1vZGVsO6d9kdSw/PyBAgAAeHAAAAAEc3IAL2NvbS5kdXdlaS5jcC5hYmUuc3RydWN0dXJlLkFjY2Vzc1RyZWVCdWlsZE1vZGVswOfdGrdEL/oCAAZJAAVpbmRleEkACXRocmVzaG9sZEIABHR5cGVMAAlhdHRyaWJ1dGV0ABJMamF2YS9sYW5nL1N0cmluZztMAAJpZHQAE0xqYXZhL2xhbmcvSW50ZWdlcjtMAAhwYXJlbnRJZHEAfgASeHAAAAABAAAAAQFwc3IAEWphdmEubGFuZy5JbnRlZ2VyEuKgpPeBhzgCAAFJAAV2YWx1ZXhyABBqYXZhLmxhbmcuTnVtYmVyhqyVHQuU4IsCAAB4cAAAAAFzcQB+ABT/////c3EAfgAQAAAABAAAAAACcQB+AARzcQB+ABQAAAACcQB+ABZzcQB+ABAAAAACAAAAAAJxAH4AB3NxAH4AFAAAAANxAH4AFnNxAH4AEAAAAAMAAAAAAnEAfgAJc3EAfgAUAAAABHEAfgAWdAAaYWNjZXNzVHJlZUxlYWZTZWNyZXROdW1iZXJzcQB+AAA/QAAAAAAADHcIAAAAEAAAAANxAH4AGXVxAH4ABQAAABQZQyXqVdcMUz78Cz8r8xBlSfhdU3EAfgAbdXEAfgAFAAAAFBlDJepV1wxTPvwLPyvzEGVJ+F1TcQB+AB11cQB+AAUAAAAUGUMl6lXXDFM+/As/K/MQZUn4XVN4dAAGY193YXZldXEAfgAFAAAAgFdZF2MqqCwVIy41eeHFMpBFGjdvgkHZdlBxknEmNZBE2m2wDf02jdci86qalivxYBgO7+HzULq4lq9862pF2OJuStgs3aWlQoNOPyWNWOFX1VSjjeTMB3WdR/Dx7FweJSTjc44GAvYPJ+eaKf/QgAdLV/fpfxQniNDeYxQD3gKjdAALY195X3BpZV9tYXBzcQB+AAA/QAAAAAAADHcIAAAAEAAAAANxAH4ABHVxAH4ABQAAAIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAxAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAHEAfgAHdXEAfgAFAAAAgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAcQB+AAl1cQB+AAUAAACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAMwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAB4eA";
+        String s = "rO0ABXNyABFqYXZhLnV0aWwuSGFzaE1hcAUH2sHDFmDRAwACRgAKbG9hZEZhY3RvckkACXRocmVzaG9sZHhwP0AAAAAAAAx3CAAAABAAAAAGdAAHY195X21hcHNxAH4AAD9AAAAAAAAMdwgAAAAQAAAAA3QAATFzcgApY29tLmR1d2VpLmNwLmFiZS50ZXh0LlNlcmlhbGl6YWJsZUVsZW1lbnQnIY+efpMv2gIAA0kACmZpZWxkSW5kZXhbAAVieXRlc3QAAltCTAAGaXNOdWxsdAATTGphdmEvbGFuZy9Cb29sZWFuO3hwAAAAAXVyAAJbQqzzF/gGCFTgAgAAeHAAAACAHq5+uKQleSSi0mK/sMS5BhY06iOzM+KkjggQ36nc9ENkVlcij1RBN6emaiNtwJHRX79dsZunsY61vlAbjKuO6kEidgWA9DXZmnYY46qDSjXFssC6xvDFBaJnAPdJkF5DR0MjlMFgd9fzijl2qPYdtGoyB4INq1xZdgxfAXVVEDBzcgARamF2YS5sYW5nLkJvb2xlYW7NIHKA1Zz67gIAAVoABXZhbHVleHAAdAABMnNxAH4ABQAAAAF1cQB+AAkAAACAHq5+uKQleSSi0mK/sMS5BhY06iOzM+KkjggQ36nc9ENkVlcij1RBN6emaiNtwJHRX79dsZunsY61vlAbjKuO6kEidgWA9DXZmnYY46qDSjXFssC6xvDFBaJnAPdJkF5DR0MjlMFgd9fzijl2qPYdtGoyB4INq1xZdgxfAXVVEDBxAH4ADHQAATNzcQB+AAUAAAABdXEAfgAJAAAAgB6ufrikJXkkotJiv7DEuQYWNOojszPipI4IEN+p3PRDZFZXIo9UQTenpmojbcCR0V+/XbGbp7GOtb5QG4yrjupBInYFgPQ12Zp2GOOqg0o1xbLAusbwxQWiZwD3SZBeQ0dDI5TBYHfX84o5dqj2HbRqMgeCDatcWXYMXwF1VRAwcQB+AAx4dAABY3NxAH4ABQAAAAF1cQB+AAkAAACAIvr8ehqCsb7aV0aEAuVAyXVRGaul61Vvq4KEMX9xtmepWJGzhVvNXusowz12CcjYo9lgg2N/G05riKqOK4EOQkAmxBIGgqvBogTZjvalZKeMkoBqsXoMJ7QrXee/mWC1JMeWZpdmWl4rAT6xUQQLrwVHzPVjJd8ma9xpx1Gi73lxAH4ADHQAFWFjY2Vzc1RyZWVCdWlsZE1vZGVsc3VyADJbTGNvbS5kdXdlaS5jcC5hYmUuc3RydWN0dXJlLkFjY2Vzc1RyZWVCdWlsZE1vZGVsO6d9kdSw/PyBAgAAeHAAAAAEc3IAL2NvbS5kdXdlaS5jcC5hYmUuc3RydWN0dXJlLkFjY2Vzc1RyZWVCdWlsZE1vZGVswOfdGrdEL/oCAAZJAAVpbmRleEkACXRocmVzaG9sZEIABHR5cGVMAAlhdHRyaWJ1dGV0ABJMamF2YS9sYW5nL1N0cmluZztMAAJpZHQAE0xqYXZhL2xhbmcvSW50ZWdlcjtMAAhwYXJlbnRJZHEAfgAbeHAAAAABAAAAAQFwc3IAEWphdmEubGFuZy5JbnRlZ2VyEuKgpPeBhzgCAAFJAAV2YWx1ZXhyABBqYXZhLmxhbmcuTnVtYmVyhqyVHQuU4IsCAAB4cAAAAAFzcQB+AB3/////c3EAfgAZAAAABAAAAAACcQB+AARzcQB+AB0AAAACcQB+AB9zcQB+ABkAAAACAAAAAAJxAH4ADXNxAH4AHQAAAANxAH4AH3NxAH4AGQAAAAMAAAAAAnEAfgAQc3EAfgAdAAAABHEAfgAfdAAaYWNjZXNzVHJlZUxlYWZTZWNyZXROdW1iZXJzcQB+AAA/QAAAAAAADHcIAAAAEAAAAANxAH4AInNxAH4ABQAAAAB1cQB+AAkAAAAUabIJA4zHEX+13+EVIHhHLiY6+DlxAH4ADHEAfgAkc3EAfgAFAAAAAHVxAH4ACQAAABRpsgkDjMcRf7Xf4RUgeEcuJjr4OXEAfgAMcQB+ACZzcQB+AAUAAAAAdXEAfgAJAAAAFGmyCQOMxxF/td/hFSB4Ry4mOvg5cQB+AAx4dAAGY193YXZlc3EAfgAFAAAAA3VxAH4ACQAAAIAl+JayH5XtXV8CAPXWXUkgVe0PiLFe4bHUFt1IaSZR9JXmWq1IW9JJw0Ao5EsgLPc5Q78/LyIb+OrlsrLmyZTtZ1iQnvL0mfLKA5KzYmhCVQxqpgjS35+pBrUa2FIU6mwYdEaI4lE2jCyGvsMronuGdNUY9IxWSpOz0ed9bU/XanEAfgAMdAALY195X3BpZV9tYXBzcQB+AAA/QAAAAAAADHcIAAAAEAAAAANxAH4ABHNxAH4ABQAAAAF1cQB+AAkAAACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAMQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABxAH4ADHEAfgANc3EAfgAFAAAAAXVxAH4ACQAAAIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAyAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAHEAfgAMcQB+ABBzcQB+AAUAAAABdXEAfgAJAAAAgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADMAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAcQB+AAx4eA";
         CpAneEngine cpAneEngine = new CpAneEngine();
         SystemKey systemKey = FileStoreUtils.getSystemKey("/key/");
         List<Attribute> attributes = Arrays.asList(
