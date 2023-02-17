@@ -15,11 +15,11 @@ import lombok.ToString;
 @ToString
 public class PublicKey extends Key {
     /**
-     * h = g ^ alpha
+     * h = g ^ beta
      */
     private Element h;
     /**
-     * 公开的双线性对
+     * 公开的双线性对e(g,g)^a
      */
     private Element egg_a;
     /**

@@ -19,7 +19,7 @@ import java.util.Map;
  * @BelongsPackage: com.duwei.jpbc.cp.abe
  * @Author: duwei
  * @Date: 2022/7/21 16:41
- * @Description: 密文
+ * @Description: 密文  CT = (AccessTree,C_wave=M*e(g,g)^as,C=h^s)
  */
 @Data
 @ToString

@@ -1,7 +1,9 @@
 package com.duwei.cp.abe.engine;
 
 import com.duwei.cp.abe.attribute.Attribute;
-import com.duwei.cp.abe.parameter.*;
+import com.duwei.cp.abe.parameter.MasterPrivateKey;
+import com.duwei.cp.abe.parameter.PublicKey;
+import com.duwei.cp.abe.parameter.UserPrivateKey;
 import com.duwei.cp.abe.polynomial.Polynomial;
 import com.duwei.cp.abe.structure.*;
 import com.duwei.cp.abe.text.CipherText;
@@ -11,7 +13,10 @@ import it.unisa.dia.gas.jpbc.Element;
 import it.unisa.dia.gas.jpbc.Field;
 import it.unisa.dia.gas.jpbc.Pairing;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * @BelongsProject: JPBC-ABE
@@ -45,8 +50,8 @@ public class CpAneEngine {
         //1.设置密文第一部分
 
 
-        Element c_ware = (plainText.getMessageValue().mul(pk.getEgg_a().powZn(s).getImmutable())).getImmutable();
-        cipherText.setC_wave(c_ware);
+        Element c_wave = (plainText.getMessageValue().mul(pk.getEgg_a().powZn(s).getImmutable())).getImmutable();
+        cipherText.setC_wave(c_wave);
 
         //2.设置密文第二部分
         Element c = pk.getH().powZn(s).getImmutable();
@@ -73,10 +78,9 @@ public class CpAneEngine {
     private void compute(AccessTreeNode node, PublicKey publicKey, CipherText cipherText) {
         Field z_r = publicKey.getPairingParameter().getZr();
         Element secretNumber = node.getSecretNumber();
-        int childrenSize = node.getChildrenSize();
         if (node.getAccessTreeNodeType() == AccessTreeNodeType.INNER_NODE) {
-            //节点选择的多项式
-            Polynomial polynomial = new Polynomial(((InnerAccessTreeNode)node).getThreshold() - 1, secretNumber, z_r);
+            //节点选择的多项式dx = kx − 1,多项式度数为threshold-1
+            Polynomial polynomial = new Polynomial(((InnerAccessTreeNode) node).getThreshold() - 1, secretNumber, z_r);
             for (AccessTreeNode child : node.getChildren()) {
                 int index = child.getIndex();
                 Element childSecret = polynomial.getValue(z_r.newElement(index).getImmutable());
@@ -103,10 +107,10 @@ public class CpAneEngine {
         }
     }
 
-    public String decryptToStr(PublicKey publicKey, UserPrivateKey userPrivateKey, CipherText cipherText){
+    public String decryptToStr(PublicKey publicKey, UserPrivateKey userPrivateKey, CipherText cipherText) {
         Element decrypt = decrypt(publicKey, userPrivateKey, cipherText);
-        if (decrypt != null){
-            return new String(ConvertUtils.byteToStr(decrypt.toBytes()));
+        if (decrypt != null) {
+            return ConvertUtils.byteToStr(decrypt.toBytes());
         }
         return null;
     }
@@ -167,6 +171,7 @@ public class CpAneEngine {
             for (Map.Entry<Element, Element> entry : indexFzMap.entrySet()) {
                 Element curIndex = entry.getKey();
                 Element curFz = entry.getValue();
+                // powZn  为 S_x'(0)
                 Element powZn = Polynomial.lagrangeCoefficient(curIndex, Sx, zero, publicKey.getPairingParameter().getZr());
                 result.mul((curFz.powZn(powZn)));
             }
